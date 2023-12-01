@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  db:
+    image: mysql:8.0.35
+    volumes:
+      - "./compose/database/data:/var/lib/mysql"
+    ports:
+      - "53306:3306"
+    restart: always
+    cap_add:
+      - SYS_NICE
+    environment:
+      - MYSQL_ROOT_PASSWORD=my-secret
+      - MYSQL_USER=zmarket
+      - MYSQL_PASSWORD=localZmarket
+      - MYSQL_DATABASE=market

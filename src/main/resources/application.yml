@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  datasource:
+    url: jdbc:mysql://localhost:53306/market
+    username: zmarket
+    password: localZmarket
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+
+jwt:
+  expire-date: 44640000
+  secret: AH1v7ordWwTFLVxlR6lPBTAPQtFVh1r9IQWO25LL4Vw=
+  refresh:
+    expire-date: 44640000 # 31일 지정 1000 * 60 * 24 * 31
