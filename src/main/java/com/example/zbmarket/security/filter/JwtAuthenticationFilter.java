@@ -18,15 +18,13 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
 
-    private final JwtUtil jwtUtil;
-
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         String token = resolveToken((HttpServletRequest) request);
 
         // 토큰 유효성 검사
-        if (token != null && jwtUtil.validateToken(token)) {
+        if (token != null && JwtUtil.validateToken(token)) {
 //            Authentication authentication = jwtUtil.getAuthentication(token);
 //            SecurityContextHolder.getContext().setAuthentication(authentication);
         }

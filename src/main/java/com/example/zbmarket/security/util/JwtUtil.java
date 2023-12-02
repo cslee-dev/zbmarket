@@ -16,19 +16,17 @@ import java.util.Date;
 @Slf4j
 @Component
 public class JwtUtil {
-    @Value("${jwt.secret}")
-    private String secretKey;
-    @Value("${jwt.expire-date}")
-    private Long expireDate;
-    @Value("${jwt.refresh.expire-date}")
-    private Long refreshExpireDate;
+    private static String secretKey;
+    private static Long expireDate;
+    private static Long refreshExpireDate;
 
-    private SecretKey getKey() {
+
+    private static SecretKey getKey() {
         byte[] encodeKey = Base64.getDecoder().decode(secretKey);
         return Keys.hmacShaKeyFor(encodeKey);
     }
 
-    public String generateAccessToken(String email, String auth) {
+    public static String generateAccessToken(String email, String auth) {
         return Jwts.builder()
                 .subject(email)
                 .claim("auth", auth)
@@ -36,7 +34,7 @@ public class JwtUtil {
                 .signWith(getKey()).compact();
     }
 
-    public String generateRefreshToken(String email, String auth) {
+    public static String generateRefreshToken(String email, String auth) {
         return Jwts.builder()
                 .subject(email)
                 .claim("auth", auth)
@@ -45,7 +43,7 @@ public class JwtUtil {
                 .signWith(getKey()).compact();
     }
 
-    public boolean validateToken(String token) {
+    public static boolean validateToken(String token) {
         try {
             Jwts.parser().verifyWith(getKey()).build().parseSignedClaims(token);
             return true;
@@ -60,5 +58,20 @@ public class JwtUtil {
             log.info("JWT claims string is empty.", e);
         }
         return false;
+    }
+
+    @Value("${jwt.secret}")
+    public void setSecretKey(String secretKey) {
+        JwtUtil.secretKey = secretKey;
+    }
+
+    @Value("${jwt.expire-date}")
+    public void setExpireDate(Long expireDate) {
+        JwtUtil.expireDate = expireDate;
+    }
+
+    @Value("${jwt.refresh.expire-date}")
+    public void setRefreshExpireDate(Long refreshExpireDate) {
+        JwtUtil.refreshExpireDate = refreshExpireDate;
     }
 }

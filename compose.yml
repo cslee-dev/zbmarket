@@ -3,8 +3,6 @@ version: '3.3'
 services:
   db:
     image: mysql:8.0.35
-    volumes:
-      - "./compose/database/data:/var/lib/mysql"
     ports:
       - "53306:3306"
     restart: always

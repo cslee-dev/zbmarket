@@ -1,11 +1,14 @@
 package com.example.zbmarket.security.filter;
 
+
 import com.example.zbmarket.rest.member.model.MemberMatchRequestDto;
 import com.example.zbmarket.rest.member.model.MemberMatchResponseDto;
 import com.example.zbmarket.security.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.log.LogMessage;
-import org.springframework.lang.Nullable;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,7 +22,6 @@ import org.springframework.security.web.authentication.SavedRequestAwareAuthenti
 import org.springframework.security.web.context.NullSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.util.Assert;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -33,33 +35,49 @@ public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticat
 
     private static final AntPathRequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER = new AntPathRequestMatcher("/api/v1/sign-in", "POST");
     private boolean postOnly = true;
-    private JwtUtil jwtUtil;
-    private String usernameParameter = "email";
+    private final ObjectMapper objectMapper;
 
-    private String passwordParameter = "password";
     private SecurityContextRepository securityContextRepository = new NullSecurityContextRepository();
-    private AuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
-    public JwtUsernamePasswordAuthenticationFilter() {
-        super(DEFAULT_ANT_PATH_REQUEST_MATCHER);
+    private final AuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
+
+
+    public JwtUsernamePasswordAuthenticationFilter(
+            AuthenticationManager authenticationManager,
+            ObjectMapper objectMapper
+    ) {
+        super(DEFAULT_ANT_PATH_REQUEST_MATCHER, authenticationManager);
+        this.objectMapper = objectMapper;
     }
 
-    public JwtUsernamePasswordAuthenticationFilter(AuthenticationManager authenticationManager) {
-        super(DEFAULT_ANT_PATH_REQUEST_MATCHER, authenticationManager);
-    }
-    private final ObjectMapper objectMapper = new ObjectMapper();
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        if (this.postOnly && !request.getMethod().equals("POST")) {
+        if (this.postOnly && !StringUtils.equals(request.getMethod(), HttpMethod.POST.name())) {
             throw new AuthenticationServiceException(
                     "Authentication method not supported:" + request.getMethod()
             );
         }
-        if (!"application/json".equals(request.getContentType())) {
+        if (!MediaType.APPLICATION_JSON_VALUE.equals(request.getContentType())) {
             throw new AuthenticationServiceException(
                     "content-type error :" + request.getContentType()
             );
         }
-        // HttpServletRequest의 InputStream에서 JSON 읽기
+        MemberMatchRequestDto memberMatchRequestDto = getMemberMatchRequestDto(request);
+        UsernamePasswordAuthenticationToken authRequest = getAuthRequest(memberMatchRequestDto);
+        setDetails(request, authRequest);
+        return this.getAuthenticationManager().authenticate(authRequest);
+    }
+
+    private static UsernamePasswordAuthenticationToken getAuthRequest(MemberMatchRequestDto memberMatchRequestDto) {
+        String username = memberMatchRequestDto.getEmail();
+        username = StringUtils.isNotEmpty(username) ? username.trim() : "";
+        String password = memberMatchRequestDto.getPassword();
+        password = StringUtils.isNotEmpty(password) ? password : "";
+        return UsernamePasswordAuthenticationToken.unauthenticated(
+                username, password
+        );
+    }
+
+    private MemberMatchRequestDto getMemberMatchRequestDto(HttpServletRequest request) throws IOException {
         BufferedReader reader = request.getReader();
         StringBuilder sb = new StringBuilder();
         String line;
@@ -68,17 +86,7 @@ public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticat
         }
         // JSON 문자열을 Java 객체로 변환
         MemberMatchRequestDto memberMatchRequestDto = objectMapper.readValue(sb.toString(), MemberMatchRequestDto.class);
-
-
-        String username = memberMatchRequestDto.getEmail();
-        username = (username != null) ? username.trim() : "";
-        String password = memberMatchRequestDto.getPassword();
-        password = (password != null) ? password : "";
-        UsernamePasswordAuthenticationToken authRequest = UsernamePasswordAuthenticationToken.unauthenticated(
-                username, password
-        );
-        setDetails(request, authRequest);
-        return this.getAuthenticationManager().authenticate(authRequest);
+        return memberMatchRequestDto;
     }
 
 
@@ -92,8 +100,8 @@ public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticat
         if (this.logger.isDebugEnabled()) {
             this.logger.debug(LogMessage.format("Set SecurityContextHolder to %s", authResult));
         }
-        String accessToken = jwtUtil.generateAccessToken(authResult.getName(), "USER");
-        String refreshToken = jwtUtil.generateRefreshToken(authResult.getName(), "USER");
+        String accessToken = JwtUtil.generateAccessToken(authResult.getName(), "USER");
+        String refreshToken = JwtUtil.generateRefreshToken(authResult.getName(), "USER");
         MemberMatchResponseDto matched = new MemberMatchResponseDto(
                 accessToken, refreshToken
         );
@@ -113,35 +121,8 @@ public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticat
         this.postOnly = postOnly;
     }
 
-    @Nullable
-    protected String obtainUsername(HttpServletRequest request) {
-        return request.getParameter(this.usernameParameter);
-    }
 
-    @Nullable
-    protected String obtainPassword(HttpServletRequest request) {
-        return request.getParameter(this.passwordParameter);
-    }
-
-    public void setUsernameParameter(String usernameParameter) {
-        Assert.hasText(usernameParameter, "Username parameter must not be empty or null");
-        this.usernameParameter = usernameParameter;
-    }
-
-    public void setPasswordParameter(String passwordParameter) {
-        Assert.hasText(passwordParameter, "Password parameter must not be empty or null");
-        this.passwordParameter = passwordParameter;
-    }
-
-    public final String getUsernameParameter() {
-        return this.usernameParameter;
-    }
-
-    public final String getPasswordParameter() {
-        return this.passwordParameter;
-    }
-
-    public void setJwtUtil(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
+    public void setSecurityContextRepository(SecurityContextRepository securityContextRepository) {
+        this.securityContextRepository = securityContextRepository;
     }
 }

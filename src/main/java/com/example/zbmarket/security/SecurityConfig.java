@@ -4,6 +4,7 @@ import com.example.zbmarket.security.filter.JwtUsernamePasswordAuthenticationFil
 import com.example.zbmarket.security.handler.CustomAuthenticationSuccessHandler;
 import com.example.zbmarket.security.service.CustomUserDetailService;
 import com.example.zbmarket.security.util.JwtUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final CustomUserDetailService customUserDetailService;
-    private final JwtUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -30,8 +31,10 @@ public class SecurityConfig {
 
 
     public JwtUsernamePasswordAuthenticationFilter authenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        JwtUsernamePasswordAuthenticationFilter filter = new JwtUsernamePasswordAuthenticationFilter(authenticationManager);
-        filter.setJwtUtil(jwtUtil);
+        JwtUsernamePasswordAuthenticationFilter filter =
+                new JwtUsernamePasswordAuthenticationFilter(
+                        authenticationManager, objectMapper
+                );
         filter.setAuthenticationSuccessHandler(new CustomAuthenticationSuccessHandler());
 //        filter.setAuthenticationFailureHandler(failureHandler());
         return filter;
@@ -52,6 +55,8 @@ public class SecurityConfig {
                 .and()
                 .userDetailsService(customUserDetailService)
                 .addFilterAfter(authenticationFilter(authenticationConfiguration.getAuthenticationManager()), UsernamePasswordAuthenticationFilter.class);
+
+
         return http.build();
     }
 }
