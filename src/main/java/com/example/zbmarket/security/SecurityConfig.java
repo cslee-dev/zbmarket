@@ -1,9 +1,9 @@
 package com.example.zbmarket.security;
 
-import com.example.zbmarket.security.filter.JwtUsernamePasswordAuthenticationFilter;
+import com.example.zbmarket.security.filter.BearerTokenAuthenticationFilter;
+import com.example.zbmarket.security.filter.CustomUsernamePasswordAuthenticationFilter;
 import com.example.zbmarket.security.handler.CustomAuthenticationSuccessHandler;
 import com.example.zbmarket.security.service.CustomUserDetailService;
-import com.example.zbmarket.security.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,33 +30,30 @@ public class SecurityConfig {
     }
 
 
-    public JwtUsernamePasswordAuthenticationFilter authenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        JwtUsernamePasswordAuthenticationFilter filter =
-                new JwtUsernamePasswordAuthenticationFilter(
+    public CustomUsernamePasswordAuthenticationFilter usernamePasswordAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
+        CustomUsernamePasswordAuthenticationFilter filter =
+                new CustomUsernamePasswordAuthenticationFilter(
                         authenticationManager, objectMapper
                 );
         filter.setAuthenticationSuccessHandler(new CustomAuthenticationSuccessHandler());
-//        filter.setAuthenticationFailureHandler(failureHandler());
         return filter;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .userDetailsService(customUserDetailService)
+                .addFilterBefore(usernamePasswordAuthenticationFilter(authenticationConfiguration.getAuthenticationManager()), UsernamePasswordAuthenticationFilter.class) // 로그인 필터
+                .csrf().disable()
                 .httpBasic().disable()
                 .formLogin().disable()
-                .csrf().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeRequests()
-                .antMatchers("/api/v1/join", "/api/v1/sign-in").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .userDetailsService(customUserDetailService)
-                .addFilterAfter(authenticationFilter(authenticationConfiguration.getAuthenticationManager()), UsernamePasswordAuthenticationFilter.class);
-
-
+                .addFilterBefore(new BearerTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) // 모든 요청에 대해 토큰 검증함
+                .authorizeRequests() // 보안규칙 설정
+                .antMatchers("/api/v1/join", "/api/v1/sign-in").permitAll() // 인증하지 않음
+                .anyRequest().authenticated(); // 그 외 요청은 인증 필요
         return http.build();
     }
 }

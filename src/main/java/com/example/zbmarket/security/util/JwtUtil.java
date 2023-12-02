@@ -1,9 +1,6 @@
 package com.example.zbmarket.security.util;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,5 +70,14 @@ public class JwtUtil {
     @Value("${jwt.refresh.expire-date}")
     public void setRefreshExpireDate(Long refreshExpireDate) {
         JwtUtil.refreshExpireDate = refreshExpireDate;
+    }
+
+    public static Claims parseClaims(String accessToken) {
+        try {
+            return Jwts.parser().verifyWith(getKey()).build()
+                    .parseSignedClaims(accessToken).getPayload();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
 }

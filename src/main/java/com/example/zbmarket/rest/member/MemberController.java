@@ -1,16 +1,11 @@
 package com.example.zbmarket.rest.member;
 
-import com.example.zbmarket.rest.member.model.MemberCreateRequestDto;
-import com.example.zbmarket.rest.member.model.MemberCreateResponseDto;
-import com.example.zbmarket.rest.member.model.MemberMatchRequestDto;
-import com.example.zbmarket.rest.member.model.MemberMatchResponseDto;
+import com.example.zbmarket.rest.member.model.*;
 import com.example.zbmarket.service.member.AuthMemberServiceImpl;
 import com.example.zbmarket.service.member.model.DefaultToken;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,24 +20,15 @@ public class MemberController {
                 memberCreateRequestDto.getEmail(),
                 memberCreateRequestDto.getPassword()
         );
-        return new MemberCreateResponseDto(
-                created.getAccessToken(),
-                created.getRefreshToken()
-        );
+        return MemberCreateResponseDto.builder()
+                .accessToken(created.getAccessToken())
+                .refreshToken(created.getRefreshToken()).build();
     }
 
-    @PostMapping("/sign-in")
-    public MemberMatchResponseDto MatchMember(
-            @RequestBody MemberMatchRequestDto memberMatchRequestDto
-    ) {
-        DefaultToken matched = authMemberService.matchMember(
-                memberMatchRequestDto.getEmail(),
-                memberMatchRequestDto.getPassword()
-        );
-        return new MemberMatchResponseDto(
-                matched.getAccessToken(),
-                matched.getRefreshToken()
-        );
+    @GetMapping("/who-am-i")
+    public ResponseFindMemberDto findMember(Authentication authentication) {
+        return ResponseFindMemberDto.builder()
+                .email(authentication.getName())
+                .build();
     }
-    
 }

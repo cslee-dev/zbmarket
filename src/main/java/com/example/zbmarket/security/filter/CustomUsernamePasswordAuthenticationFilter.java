@@ -31,7 +31,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+public class CustomUsernamePasswordAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private static final AntPathRequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER = new AntPathRequestMatcher("/api/v1/sign-in", "POST");
     private boolean postOnly = true;
@@ -41,7 +41,7 @@ public class JwtUsernamePasswordAuthenticationFilter extends AbstractAuthenticat
     private final AuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
 
 
-    public JwtUsernamePasswordAuthenticationFilter(
+    public CustomUsernamePasswordAuthenticationFilter(
             AuthenticationManager authenticationManager,
             ObjectMapper objectMapper
     ) {

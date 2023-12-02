@@ -18,7 +18,6 @@ import java.util.List;
 public class AuthMemberServiceImpl implements AuthMemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
 
     @Transactional
     @Override
@@ -30,9 +29,9 @@ public class AuthMemberServiceImpl implements AuthMemberService {
                 new MemberEntity(
                         null, email, encodedPassword, now, now, roles)
         );
-        String accessToken = jwtUtil.generateAccessToken(
+        String accessToken = JwtUtil.generateAccessToken(
                 saved.getEmail(), MemberRoleEnum.USER.name());
-        String refreshToken = jwtUtil.generateRefreshToken(
+        String refreshToken = JwtUtil.generateRefreshToken(
                 saved.getEmail(), MemberRoleEnum.USER.name());
         return DefaultToken.builder()
                 .accessToken(accessToken)
@@ -40,11 +39,4 @@ public class AuthMemberServiceImpl implements AuthMemberService {
                 .build();
     }
 
-    @Override
-    public DefaultToken matchMember(String email, String password) {
-        return DefaultToken.builder()
-                .accessToken("")
-                .refreshToken("")
-                .build();
-    }
 }
