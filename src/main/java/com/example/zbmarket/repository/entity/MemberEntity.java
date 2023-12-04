@@ -37,6 +37,11 @@ public class MemberEntity implements UserDetails {
     @Builder.Default
     private List<String> roles = new ArrayList<>();
 
+
+
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private MemberCartEntity cart;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream()
