@@ -2,11 +2,9 @@ package com.example.zbmarket.repository.entity;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,6 +19,10 @@ public class ProductEntity {
 
     private String name;
     private Long stock;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<CartItemEntity> cartItems;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
