@@ -8,7 +8,7 @@
 
 ## 데이터베이스 설치
 - 프로젝트 루트 디렉토리에서 
-```shell
+```shell 
 docker compose up -d
 ```
 
