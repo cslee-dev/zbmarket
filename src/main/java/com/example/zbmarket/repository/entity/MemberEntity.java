@@ -38,9 +38,11 @@ public class MemberEntity implements UserDetails {
     private List<String> roles = new ArrayList<>();
 
 
-
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private MemberCartEntity cart;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<MemberOrderEntity> orders;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

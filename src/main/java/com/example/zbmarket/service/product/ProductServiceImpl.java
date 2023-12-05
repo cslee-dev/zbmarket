@@ -20,12 +20,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Override
-    public ProductCreated createProduct(String name, Long stock) {
+    public ProductCreated createProduct(String name, Long stock, Long price) {
         LocalDateTime now = LocalDateTime.now();
         ProductEntity created = productRepository.save(
                 ProductEntity.builder()
                         .name(name)
                         .stock(stock)
+                        .price(price)
                         .createdAt(now)
                         .updatedAt(now)
                         .build()
@@ -35,6 +36,7 @@ public class ProductServiceImpl implements ProductService {
                 .id(created.getId())
                 .name(created.getName())
                 .stock(created.getStock())
+                .price(created.getPrice())
                 .createdAt(created.getCreatedAt())
                 .updatedAt(created.getUpdatedAt())
                 .build();

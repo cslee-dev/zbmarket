@@ -16,6 +16,7 @@ public class ProductCreated {
     private Long id;
     private String name;
     private Long stock;
+    private Long price;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -7,9 +7,9 @@ import com.example.zbmarket.service.product.model.ProductFoundList;
 import java.util.List;
 
 public interface ProductService {
-    public ProductCreated createProduct(String name, Long stock);
+    ProductCreated createProduct(String name, Long stock, Long price);
 
-    public ProductFound findProduct(Long id);
+    ProductFound findProduct(Long id);
 
-    public List<ProductFoundList> findProductList();
+    List<ProductFoundList> findProductList();
 }

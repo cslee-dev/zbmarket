@@ -16,6 +16,7 @@ public class ProductFoundList {
     private Long id;
     private String name;
     private Long stock;
+    private Long price;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -24,6 +25,7 @@ public class ProductFoundList {
                 .id(product.getId())
                 .name(product.getName())
                 .stock(product.getStock())
+                .price(product.getPrice())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();

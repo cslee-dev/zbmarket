@@ -24,7 +24,8 @@ public class ProductController {
     public ResponseProductCreateDto createProduct(@RequestBody RequestProductCreateDto requestProductCreateDto) {
         ProductCreated created = productService.createProduct(
                 requestProductCreateDto.getName(),
-                requestProductCreateDto.getStock()
+                requestProductCreateDto.getStock(),
+                requestProductCreateDto.getPrice()
         );
         return ResponseProductCreateDto.from(created);
     }

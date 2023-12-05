@@ -18,6 +18,7 @@ public class ProductEntity {
     private Long id;
 
     private String name;
+    private Long price;
     private Long stock;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
