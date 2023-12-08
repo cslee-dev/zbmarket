@@ -15,9 +15,9 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-class ProductServiceImplTest {
+class ProductServiceTest {
     @Autowired
-    private ProductServiceImpl productService;
+    private ProductService productService;
 
     @MockBean
     private ProductRepository productRepository;
@@ -29,6 +29,7 @@ class ProductServiceImplTest {
         LocalDateTime now = LocalDateTime.now();
         String name = "testProduct";
         Long stock = 10L;
+        Long price = 100L;
         Mockito.when(
                 productRepository.save(
                         Mockito.any()
@@ -38,13 +39,14 @@ class ProductServiceImplTest {
                         .id(null)
                         .name(name)
                         .stock(stock)
+                        .price(price)
                         .createdAt(now)
                         .updatedAt(now)
                         .build()
         );
 
         //when
-        ProductCreated productCreated = productService.createProduct(name, stock);
+        ProductCreated productCreated = productService.createProduct(name, stock, price);
 
         //then
         assertEquals(name, productCreated.getName());

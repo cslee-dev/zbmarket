@@ -1,7 +1,7 @@
 package com.example.zbmarket.rest.member;
 
 import com.example.zbmarket.rest.member.model.*;
-import com.example.zbmarket.service.member.AuthMemberServiceImpl;
+import com.example.zbmarket.service.member.AuthMemberService;
 import com.example.zbmarket.service.member.model.DefaultToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1")
 public class MemberController {
-    private final AuthMemberServiceImpl authMemberService;
+    private final AuthMemberService authMemberService;
 
     @PostMapping("/join")
     public MemberCreateResponseDto createMember(

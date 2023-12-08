@@ -3,7 +3,7 @@ package com.example.zbmarket.rest.cart;
 import com.example.zbmarket.rest.cart.model.RequestCartItemCreateDto;
 import com.example.zbmarket.rest.cart.model.ResponseCartItemCreateDto;
 import com.example.zbmarket.rest.cart.model.ResponseCartItemFoundListDto;
-import com.example.zbmarket.service.cart.CartServiceImpl;
+import com.example.zbmarket.service.cart.CartService;
 import com.example.zbmarket.service.cart.model.CartItemCreated;
 import com.example.zbmarket.service.cart.model.CartItemFoundList;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1")
 public class MemberCartController {
-    private final CartServiceImpl cartService;
+    private final CartService cartService;
 
     @PostMapping("/carts/{cartId}/products/{productId}")
     public ResponseCartItemCreateDto createCartItem(

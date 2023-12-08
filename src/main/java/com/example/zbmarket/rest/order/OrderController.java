@@ -2,7 +2,7 @@ package com.example.zbmarket.rest.order;
 
 import com.example.zbmarket.rest.order.model.RequestOrderCreateDto;
 import com.example.zbmarket.rest.order.model.ResponseOrderCreateDto;
-import com.example.zbmarket.service.order.OrderServiceImpl;
+import com.example.zbmarket.service.order.OrderService;
 import com.example.zbmarket.service.order.model.OrderCreated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 public class OrderController {
-    private final OrderServiceImpl orderService;
+    private final OrderService orderService;
 
     @PostMapping("/orders")
     public ResponseOrderCreateDto createOrder(

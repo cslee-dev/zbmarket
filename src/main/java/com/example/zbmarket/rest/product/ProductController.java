@@ -4,7 +4,7 @@ import com.example.zbmarket.rest.product.model.RequestProductCreateDto;
 import com.example.zbmarket.rest.product.model.ResponseProductCreateDto;
 import com.example.zbmarket.rest.product.model.ResponseProductFoundDto;
 import com.example.zbmarket.rest.product.model.ResponseProductFoundListDto;
-import com.example.zbmarket.service.product.ProductServiceImpl;
+import com.example.zbmarket.service.product.ProductService;
 import com.example.zbmarket.service.product.model.ProductCreated;
 import com.example.zbmarket.service.product.model.ProductFound;
 import com.example.zbmarket.service.product.model.ProductFoundList;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1")
 public class ProductController {
-    private final ProductServiceImpl productService;
+    private final ProductService productService;
 
     @PostMapping("/products")
     public ResponseProductCreateDto createProduct(@RequestBody RequestProductCreateDto requestProductCreateDto) {

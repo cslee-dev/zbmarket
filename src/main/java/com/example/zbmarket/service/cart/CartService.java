@@ -18,13 +18,12 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
-public class CartServiceImpl implements CartItemService {
+public class CartService {
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final MemberCartRepository memberCartRepository;
 
     @Transactional
-    @Override
     public CartItemCreated createCartItem(Long cartId, Long productId, Long quantity) {
         LocalDateTime now = LocalDateTime.now();
         MemberCartEntity memberCartEntity = memberCartRepository
@@ -53,7 +52,6 @@ public class CartServiceImpl implements CartItemService {
                 .build();
     }
 
-    @Override
     public List<CartItemFoundList> findCartItemList(Long cartId) {
         List<CartItemEntity> founds = cartItemRepository.findByCartId(cartId);
         return founds.stream()
