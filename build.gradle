@@ -2,7 +2,10 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.7.18'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.openapi.generator' version '7.1.0'
 }
+
+apply plugin: 'org.openapi.generator'
 
 group = 'com.example'
 version = '0.0.1'
@@ -23,6 +26,7 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
     implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.apache.commons:commons-lang3:3.1'
@@ -43,3 +47,28 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+
+openApiGenerate {
+    typeMappings = [
+            "DateTime": "Instant",
+            "Decimal": "BigDecimal"
+    ]
+    importMappings = [
+            "Instant": "java.time.Instant",
+            "BigDecimal": "java.math.BigDecimal"
+    ]
+    generatorName = 'spring'
+    inputSpec = "$projectDir/doc/api-spec.yaml"
+    outputDir = "$buildDir/openapi"
+    skipValidateSpec = true
+    configOptions = [
+            basePackage               : "com.example.zbmarket",
+            identifierNamingConvention: "snake_case",
+            useTags                   : "true",
+            useSpringBoot3            : "false",
+            useSwaggerUI              : "false",
+            interfaceOnly             : "true",
+    ]
+}
+

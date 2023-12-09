@@ -35,4 +35,11 @@ public class MemberCartEntity {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+
+    public static MemberCartEntity createNewCart(MemberEntity member) {
+        return MemberCartEntity.builder()
+                .member(member)
+                .build();
+    }
 }

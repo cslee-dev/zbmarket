@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: zbMarket
+  description: zbMarket API 문서
+  version: 0.0.0
+servers:
+  - url: https://dev-domain/api/v1
+    description: DEV
+  - url: https://stg-domain/api/v1
+    description: STAGE
+  - url: https://prd-domain/api/v1
+    description: PROD
+tags:
+  - name: product
+    description: 상품 관련 APIs
+paths:
+  /api/v1/products:
+    post:
+      tags:
+        - product
+      summary: 상품 생성
+      description: 상품 생성
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestProductCreateDto'
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseProductCreateDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: [ ]
+
+components:
+  responses:
+    BadRequest:
+      description: 요청 실패
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseDto'
+
+    Unauthorized:
+      description: 인증 실패
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseDto'
+
+    Forbidden:
+      description: 인가 실패 (권한 없음)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseDto'
+
+    InternalServerError:
+      description: 애플리케이션 오류
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseDto'
+  schemas:
+    RequestProductCreateDto:
+      type: object
+      required:
+        - name
+        - stock
+        - price
+      properties:
+        name:
+          type: string
+        stock:
+          type: integer
+        price:
+          type: integer
+    ResponseProductCreateDto:
+      type: object
+      required:
+        -id
+        -name
+        -stock
+        -price
+        -createdAt
+        -updatedAt
+      properties:
+        id:
+          type: integer
+        stock:
+          type: integer
+        price:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ErrorResponseDto:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorItemResponseDto'
+
+    ErrorItemResponseDto:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        parameter:
+          type: string

@@ -1,5 +1,7 @@
 package com.example.zbmarket.service.member;
 
+import com.example.zbmarket.exception.MarketErrorCode;
+import com.example.zbmarket.exception.MemberException;
 import com.example.zbmarket.repository.MemberCartRepository;
 import com.example.zbmarket.repository.MemberRepository;
 import com.example.zbmarket.repository.entity.MemberCartEntity;
@@ -8,11 +10,11 @@ import com.example.zbmarket.security.util.JwtUtil;
 import com.example.zbmarket.service.member.model.DefaultToken;
 import com.example.zbmarket.type.member.MemberRoleEnum;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -22,37 +24,31 @@ public class AuthMemberService {
     private final MemberCartRepository memberCartRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Transactional
-    public DefaultToken createMember(String email, String password) {
-        String encodedPassword = passwordEncoder.encode(password);
-        LocalDateTime now = LocalDateTime.now();
-        List<String> roles = List.of(MemberRoleEnum.USER.name());
-        MemberEntity saved = memberRepository.save(
-                MemberEntity.builder()
-                        .id(null)
-                        .email(email)
-                        .password(encodedPassword)
-                        .createdAt(now)
-                        .updatedAt(now)
-                        .roles(roles)
-                        .build()
-        );
+    public MemberEntity saveMemberEntity(MemberEntity member) throws MemberException {
+        try {
+            return memberRepository.save(member);
+        } catch (DataIntegrityViolationException e) {
+            throw new MemberException(MarketErrorCode.JOINED_MEMBER_ERROR);
+        }
+    }
 
-        memberCartRepository.save(
-                MemberCartEntity.builder()
-                        .member(saved)
-                        .createdAt(now)
-                        .updatedAt(now)
-                        .build()
-        );
+    @Transactional
+    public DefaultToken createMember(String email, String password) throws MemberException {
+        String encodedPassword = passwordEncoder.encode(password);
+        List<String> roles = List.of(MemberRoleEnum.USER.name());
+        MemberEntity member = MemberEntity
+                .createNewMember(email, encodedPassword, roles);
+
+        MemberEntity saved = saveMemberEntity(member);
+
+        memberCartRepository.save(MemberCartEntity.createNewCart(saved));
+
         String accessToken = JwtUtil.generateAccessToken(
                 saved.getEmail(), MemberRoleEnum.USER.name());
         String refreshToken = JwtUtil.generateRefreshToken(
                 saved.getEmail(), MemberRoleEnum.USER.name());
-        return DefaultToken.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+
+        return DefaultToken.from(accessToken, refreshToken);
     }
 
 }

@@ -84,4 +84,14 @@ public class MemberEntity implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public static MemberEntity createNewMember(
+            String email, String password, List<String> roles) {
+        return MemberEntity.builder()
+                .id(null)
+                .email(email)
+                .password(password)
+                .roles(roles)
+                .build();
+    }
 }
