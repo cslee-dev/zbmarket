@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1")
@@ -15,7 +17,7 @@ public class MemberController {
 
     @PostMapping("/join")
     public MemberCreateResponseDto createMember(
-            @RequestBody MemberCreateRequestDto memberCreateRequestDto) {
+            @RequestBody @Valid MemberCreateRequestDto memberCreateRequestDto) {
         DefaultToken created = authMemberService.createMember(
                 memberCreateRequestDto.getEmail(),
                 memberCreateRequestDto.getPassword()
