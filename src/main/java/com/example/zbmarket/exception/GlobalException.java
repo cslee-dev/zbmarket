@@ -3,13 +3,13 @@ package com.example.zbmarket.exception;
 import lombok.Getter;
 
 @Getter
-public class MemberException extends RuntimeException {
-    private final MarketErrorCode marketErrorCode;
+public class GlobalException extends Exception {
+    private final ErrorCodeEnum errorCodeEnum;
     private final String detailMessage;
 
-    public MemberException(MarketErrorCode errorCode) {
+    public GlobalException(ErrorCodeEnum errorCode) {
         super(errorCode.getMessage());
-        this.marketErrorCode = errorCode;
+        this.errorCodeEnum = errorCode;
         this.detailMessage = errorCode.getMessage();
     }
 

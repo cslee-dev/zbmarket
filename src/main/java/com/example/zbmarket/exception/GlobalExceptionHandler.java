@@ -1,6 +1,6 @@
 package com.example.zbmarket.exception;
 
-import com.example.zbmarket.exception.model.ResponseMemberError;
+import com.example.zbmarket.exception.model.ResponseGlobalError;
 import com.example.zbmarket.exception.model.ResponseValidateError;
 import com.example.zbmarket.exception.model.ResponseValidateItemError;
 import lombok.extern.slf4j.Slf4j;
@@ -30,23 +30,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(MemberException.class)
-    public ResponseEntity<ResponseMemberError> handleException(
-            MemberException e,
+    @ExceptionHandler({GlobalException.class, Exception.class})
+    public ResponseEntity<ResponseGlobalError> handleException(
+            GlobalException e,
             HttpServletRequest request
     ) {
         log.error("errorCode: {}, url: {}, message: {}",
                 e.getDetailMessage(), request.getRequestURI(), e.getDetailMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ResponseMemberError.from(e));
+                .body(ResponseGlobalError.from(e));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(
-            Exception e,
-            HttpServletRequest request
-    ) {
-        log.error("errorMessage: {}, url: {}", e.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-    }
 }

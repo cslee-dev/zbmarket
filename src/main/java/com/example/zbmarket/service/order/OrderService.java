@@ -1,5 +1,7 @@
 package com.example.zbmarket.service.order;
 
+import com.example.zbmarket.exception.ErrorCodeEnum;
+import com.example.zbmarket.exception.GlobalException;
 import com.example.zbmarket.repository.MemberRepository;
 import com.example.zbmarket.repository.OrderRepository;
 import com.example.zbmarket.repository.ProductRepository;
@@ -8,12 +10,16 @@ import com.example.zbmarket.repository.entity.MemberOrderEntity;
 import com.example.zbmarket.repository.entity.OrderProductEntity;
 import com.example.zbmarket.repository.entity.ProductEntity;
 import com.example.zbmarket.rest.order.model.RequestOrderCreateDto;
+import com.example.zbmarket.rest.order.model.RequestOrderProductCreateDto;
+import com.example.zbmarket.service.order.model.OrderCanceled;
 import com.example.zbmarket.service.order.model.OrderCreated;
+import com.example.zbmarket.type.order.OrderStatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -23,37 +29,55 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
 
+
     @Transactional
-    public OrderCreated createOrder(RequestOrderCreateDto requestOrderCreateDto, String email) {
-        // 주문서 생성자 가져온다.
-        MemberEntity memberEntity = memberRepository.findByEmail(email)
+    public OrderCreated createOrder(RequestOrderCreateDto requestOrderCreateDto, String email) throws GlobalException {
+        MemberEntity memberEntity = findMemberByEmail(email);
+        OrderAccumulator accumulator = new OrderAccumulator();
+        List<OrderProductEntity> orderProducts = createOrderProducts(requestOrderCreateDto, accumulator);
+        MemberOrderEntity memberOrder = createNewOrder(memberEntity, orderProducts, accumulator);
+        orderRepository.save(memberOrder);
+        return OrderCreated.from(memberOrder);
+    }
+
+    public OrderCanceled cancelOrder(Long id, String email) throws GlobalException {
+        MemberEntity memberEntity = findMemberByEmail(email);
+        MemberOrderEntity find = orderRepository.findById(id)
                 .orElseThrow(NullPointerException::new);
 
-        // 주문 상품 정보를 누적하기 위함
-        OrderAccumulator accumulator = new OrderAccumulator();
-        // 유저가 주문한 상품정보를 저장한다.
-        List<OrderProductEntity> orderProducts = requestOrderCreateDto.getOrderProducts()
+        if (!Objects.equals(find.getMember().getEmail(), memberEntity.getEmail())) {
+            throw new GlobalException(ErrorCodeEnum.ORDER_OWNER_ERROR);
+        }
+
+        MemberOrderEntity changed = find.withStatus(OrderStatusEnum.CANCELED);
+        orderRepository.save(changed);
+        return OrderCanceled.from(changed);
+    }
+
+    private MemberOrderEntity createNewOrder(MemberEntity memberEntity, List<OrderProductEntity> orderProducts, OrderAccumulator accumulator) {
+        return MemberOrderEntity.createNewOrder(memberEntity, orderProducts, accumulator);
+    }
+
+    private MemberEntity findMemberByEmail(String email) throws GlobalException {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new GlobalException(ErrorCodeEnum.NOT_FOUND_MEMBER_ERROR));
+    }
+
+    private List<OrderProductEntity> createOrderProducts(RequestOrderCreateDto requestOrderCreateDto, OrderAccumulator accumulator) {
+        return requestOrderCreateDto.getOrderProducts()
                 .stream()
-                .map(request -> {
-                    // 상품을 조회한다
-                    ProductEntity productEntity = productRepository.findById(request.getId())
-                            .orElseThrow(NullPointerException::new);
-                    // Todo feat 재고 확인
-                    // 주문서에 총 금액을 기재하기 위해 금액 누적
-                    accumulator.accumulate(productEntity, request.getQuantity());
-                    // 주문 상품 객체 생성
-                    return OrderProductEntity.createNewOrderProduct(
-                            productEntity, request.getQuantity()
-                            , productEntity.getPrice() * request.getQuantity());
-                }).collect(Collectors.toList());
+                .map(request -> processOrderRequest(request, accumulator))
+                .collect(Collectors.toList());
+    }
 
-        MemberOrderEntity memberOrder = MemberOrderEntity.createNewOrder(
-                memberEntity,
-                orderProducts,
-                accumulator
-        );
+    private OrderProductEntity processOrderRequest(RequestOrderProductCreateDto requestOrderProductCreateDto, OrderAccumulator accumulator) throws GlobalException {
+        ProductEntity productEntity = findProductById(requestOrderProductCreateDto.getId());
+        accumulator.accumulate(productEntity, requestOrderProductCreateDto.getQuantity());
+        return OrderProductEntity.createNewOrderProduct(productEntity, requestOrderProductCreateDto.getQuantity(), productEntity.getPrice() * requestOrderProductCreateDto.getQuantity());
+    }
 
-        MemberOrderEntity saved = orderRepository.save(memberOrder);
-        return OrderCreated.from(saved);
+    private ProductEntity findProductById(Long id) throws GlobalException {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new GlobalException(ErrorCodeEnum.NOT_FOUND_PRODUCT_ERROR));
     }
 }

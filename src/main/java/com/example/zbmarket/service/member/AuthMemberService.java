@@ -1,7 +1,7 @@
 package com.example.zbmarket.service.member;
 
-import com.example.zbmarket.exception.MarketErrorCode;
-import com.example.zbmarket.exception.MemberException;
+import com.example.zbmarket.exception.ErrorCodeEnum;
+import com.example.zbmarket.exception.GlobalException;
 import com.example.zbmarket.repository.MemberCartRepository;
 import com.example.zbmarket.repository.MemberRepository;
 import com.example.zbmarket.repository.entity.MemberCartEntity;
@@ -24,16 +24,16 @@ public class AuthMemberService {
     private final MemberCartRepository memberCartRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public MemberEntity saveMemberEntity(MemberEntity member) throws MemberException {
+    public MemberEntity saveMemberEntity(MemberEntity member) throws GlobalException {
         try {
             return memberRepository.save(member);
         } catch (DataIntegrityViolationException e) {
-            throw new MemberException(MarketErrorCode.JOINED_MEMBER_ERROR);
+            throw new GlobalException(ErrorCodeEnum.JOINED_MEMBER_ERROR);
         }
     }
 
     @Transactional
-    public DefaultToken createMember(String email, String password) throws MemberException {
+    public DefaultToken createMember(String email, String password) throws GlobalException {
         String encodedPassword = passwordEncoder.encode(password);
         List<String> roles = List.of(MemberRoleEnum.USER.name());
         MemberEntity member = MemberEntity

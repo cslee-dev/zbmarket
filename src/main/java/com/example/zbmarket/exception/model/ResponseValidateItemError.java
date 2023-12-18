@@ -1,6 +1,6 @@
 package com.example.zbmarket.exception.model;
 
-import com.example.zbmarket.exception.ValidateErrorCode;
+import com.example.zbmarket.exception.ErrorCodeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,39 +15,39 @@ import java.util.Objects;
 @Builder
 @Getter
 public class ResponseValidateItemError {
-    private ValidateErrorCode errorCode;
+    private ErrorCodeEnum errorCode;
     private String errorMessage;
 
-    public static ResponseValidateItemError from(ObjectError e){
-        ValidateErrorCode errorCode = mapToErrorCode(e);
+    public static ResponseValidateItemError from(ObjectError e) {
+        ErrorCodeEnum errorCode = mapToErrorCode(e);
         return ResponseValidateItemError.builder()
                 .errorCode(errorCode)
                 .errorMessage(e.getDefaultMessage())
                 .build();
     }
 
-    public static ValidateErrorCode mapToErrorCode(ObjectError error) {
-        ValidateErrorCode errorCode;
-        if(error instanceof FieldError) {
+    public static ErrorCodeEnum mapToErrorCode(ObjectError error) {
+        ErrorCodeEnum errorCode;
+        if (error instanceof FieldError) {
             FieldError fieldError = (FieldError) error;
             switch (Objects.requireNonNull(fieldError.getCode())) {
                 case "NotNull":
-                    errorCode = ValidateErrorCode.FIELD_NULL_ERROR;
+                    errorCode = ErrorCodeEnum.FIELD_NULL_ERROR;
                     break;
                 case "Email":
-                    errorCode = ValidateErrorCode.INVALID_EMAIL_FORMAT;
+                    errorCode = ErrorCodeEnum.INVALID_EMAIL_FORMAT;
                     break;
                 case "Size":
-                    errorCode = ValidateErrorCode.FIELD_SIZE_ERROR;
+                    errorCode = ErrorCodeEnum.FIELD_SIZE_ERROR;
                     break;
                 case "Pattern":
-                    errorCode = ValidateErrorCode.PATTERN_MISMATCH_ERROR;
+                    errorCode = ErrorCodeEnum.PATTERN_MISMATCH_ERROR;
                     break;
                 default:
-                    errorCode = ValidateErrorCode.UNKNOWN_FIELD_ERROR;
+                    errorCode = ErrorCodeEnum.UNKNOWN_FIELD_ERROR;
             }
         } else {
-            errorCode = ValidateErrorCode.FIELD_NULL_ERROR;
+            errorCode = ErrorCodeEnum.FIELD_NULL_ERROR;
         }
         return errorCode;
     }
