@@ -70,7 +70,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    private OrderProductEntity processOrderRequest(RequestOrderProductCreateDto requestOrderProductCreateDto, OrderAccumulator accumulator) throws GlobalException {
+    private OrderProductEntity processOrderRequest(RequestOrderProductCreateDto requestOrderProductCreateDto, OrderAccumulator accumulator) {
         ProductEntity productEntity = findProductById(requestOrderProductCreateDto.getId());
         accumulator.accumulate(productEntity, requestOrderProductCreateDto.getQuantity());
         return OrderProductEntity.createNewOrderProduct(productEntity, requestOrderProductCreateDto.getQuantity(), productEntity.getPrice() * requestOrderProductCreateDto.getQuantity());

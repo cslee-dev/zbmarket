@@ -3,9 +3,15 @@ package com.example.zbmarket.service.order;
 import com.example.zbmarket.exception.GlobalException;
 import com.example.zbmarket.repository.MemberRepository;
 import com.example.zbmarket.repository.OrderRepository;
+import com.example.zbmarket.repository.ProductRepository;
 import com.example.zbmarket.repository.entity.MemberEntity;
 import com.example.zbmarket.repository.entity.MemberOrderEntity;
+import com.example.zbmarket.repository.entity.ProductEntity;
+import com.example.zbmarket.rest.order.model.RequestOrderCreateDto;
+import com.example.zbmarket.rest.order.model.RequestOrderProductCreateDto;
 import com.example.zbmarket.service.order.model.OrderCanceled;
+import com.example.zbmarket.service.order.model.OrderCreated;
+import com.example.zbmarket.type.order.OrderStatusEnum;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,11 +20,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +39,9 @@ class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Mock
+    private ProductRepository productRepository;
 
     private MemberEntity memberEntity;
 
@@ -45,9 +56,50 @@ class OrderServiceTest {
                 .build();
     }
 
+
+    @Test
+    @DisplayName("주문 성공")
+    void testCreateOrderSuccess() {
+        //given
+        String email = "user@example.com";
+
+        List<RequestOrderProductCreateDto> orderProducts = new ArrayList<>();
+        RequestOrderProductCreateDto orderProduct = RequestOrderProductCreateDto.builder()
+                .id(1L)
+                .quantity(2L)
+                .build();
+        orderProducts.add(orderProduct);
+        RequestOrderCreateDto requestDto = RequestOrderCreateDto.builder()
+                .orderProducts(orderProducts)
+                .build();
+
+        ProductEntity productEntity = ProductEntity.builder()
+                .id(1L)
+                .price(1000L)
+                .build();
+
+
+        MemberOrderEntity expectedOrder = MemberOrderEntity.builder()
+                .status(OrderStatusEnum.ORDERED)
+                .build();
+
+        // 모의 동작 설정
+        when(memberRepository.findByEmail(email)).thenReturn(Optional.of(memberEntity));
+        when(productRepository.findById(anyLong())).thenReturn(Optional.of(productEntity));
+        when(orderRepository.save(any(MemberOrderEntity.class))).thenReturn(expectedOrder);
+
+        // 테스트 실행
+        OrderCreated result = orderService.createOrder(requestDto, email);
+
+        // 검증
+        assertNotNull(result);
+        assertEquals(OrderStatusEnum.ORDERED, result.getStatus());
+
+    }
+
     @Test
     @DisplayName("주문 취소 성공")
-    void testCancelOrderSuccess() throws GlobalException {
+    void testCancelOrderSuccess() {
         //given
         Long orderId = 1L;
         String email = "user@example.com";

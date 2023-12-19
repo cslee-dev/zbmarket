@@ -3,7 +3,7 @@ package com.example.zbmarket.exception;
 import lombok.Getter;
 
 @Getter
-public class GlobalException extends Exception {
+public class GlobalException extends RuntimeException {
     private final ErrorCodeEnum errorCodeEnum;
     private final String detailMessage;
 
